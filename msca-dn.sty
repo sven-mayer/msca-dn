@@ -32,6 +32,18 @@
 %  \scriptsize   8 pt, suitable for footnote references
 \usepackage[a4paper,margin=15mm]{geometry}
 \usepackage[bf,small]{titlesec}
+% Halve the default vertical space above \paragraph headings (article.cls
+% default is 3.25ex plus 1ex minus 0.2ex before, -1em after for the
+% run-in style); \paragraph is used heavily for WP tasks, DC objectives
+% and DC profiles (\mscwptask, mscobj, mscdc), so this adds up over the
+% document.
+\titlespacing*{\paragraph}{0pt}{1.625ex plus 0.5ex minus 0.1ex}{1em}
+% titlesec silently turns \subsubsection's compact kernel run-in spacing
+% (article.cls default: 3.25ex plus 1ex minus 0.2ex before, -1em after)
+% into a much more spaced-out block heading once loaded with any options
+% (as it is above) -- restore a small/negative afterskip so body text
+% and tables sit close under every \subsubsection, not just \msccaption's.
+\titlespacing*{\subsubsection}{0pt}{2.25ex plus 1ex minus 0.2ex}{0.3em}
 \usepackage{parskip}
 \usepackage{times}
 \usepackage[scaled]{helvet}
@@ -55,6 +67,25 @@
 % TOC needs to fit on one page with in-y'r-face title
 \renewcommand{\contentsname}{TABLE OF CONTENTS}
 \setcounter{tocdepth}{3}
+
+% Shrink the extra vertical gap article.cls inserts above each \section
+% entry in the TOC (default 1.0em plus 1pt) so the TOC takes less space.
+\makeatletter
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{0.4em \@plus\p@}%
+    \setlength\@tempdima{1.5em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\hfil \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
+\makeatother
 
 % The \checkmark is in here
 \usepackage{amssymb}
