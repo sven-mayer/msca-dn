@@ -14,20 +14,24 @@
 \note{Table of Contents should be one page, but bear in mind it's across two documents}\\
 \DNtag{APP-FORM-HEMSCADN}
 
+\newpage
 % Part B1 sections
-\include{participants}
-\include{excellence}
-\include{impact}
-\include{quality}
+\input{participants}
+\input{excellence}
+\input{impact}
+\input{quality}
 
-% Part B2 sections
-\include{recruitment}
-\include{network}
-\include{organisations}
-\include{letters}
-\include{declaration}
-\include{raise}
+% Part B2 starts on its own page (section 4, Recruitment Strategy);
+% no other section break is forced between sections.
+\clearpage
+\input{recruitment}
+\input{network}
+\input{organisations}
+\input{letters}
+\input{declaration}
+\input{raise}
 
+\newpage
 \mscpage{END PAGE}
 
 \end{document}
