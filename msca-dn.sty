@@ -12,6 +12,45 @@
 \newcommand{\note}[1]{}
 \newcommand{\todo}[2]{}
 
+% Which DN variant this proposal is evaluated as: DN (standard, the
+% default), DN-ID (industrial doctorate) or DN-JD (joint doctorate).
+% Shown in the page header and on the start/end pages (\mscpage), and
+% also controls (via \mscinputifdnjd below) whether the DN-JD-only
+% Letters of pre-agreement section is pulled in. Override in common.tex
+% for the specific proposal, e.g. \renewcommand{\dnvariant}{DN-JD}
+\newcommand{\dnvariant}{DN}
+
+% Whether this proposal also opts in to the RAISE pilot call
+% (HORIZON-RAISE-2026-01-MSCA); controls whether that line is shown on
+% the start/end pages (\mscpage), and (via \mscinputifraise below)
+% whether the RAISE DN section is pulled in. Defaults to false (a
+% typical DN does not opt in); set \raiseoptedtrue in common.tex for a
+% proposal that does.
+\newif\ifraiseopted
+\raiseoptedfalse
+
+% \mscinputifdnjd{<file>} pulls in <file> only when \dnvariant is
+% DN-JD -- use it in place of \input{letters} in master.tex/PartB2.tex,
+% so the Letters of pre-agreement section follows \dnvariant
+% automatically instead of needing its own \input line kept in sync by
+% hand (in both files) every time \dnvariant changes. The comparison is
+% a plain-TeX \ifx test against the (parameterless, non-\xspace'd)
+% \dnvariant text, so it needs no extra package.
+\newcommand{\mscinputifdnjd}[1]{%
+    \def\msc@dnjd{DN-JD}%
+    \ifx\dnvariant\msc@dnjd
+        \input{#1}%
+    \fi
+}
+
+% Same idea as \mscinputifdnjd, but gated on \ifraiseopted -- use it in
+% place of \input{raise} in master.tex/PartB2.tex.
+\newcommand{\mscinputifraise}[1]{%
+    \ifraiseopted
+        \input{#1}%
+    \fi
+}
+
 % Options.  Unknown options assumed to be project name
 \newcommand*{\getproject}[1]{%
     \renewcommand{\project}{\textsf{#1}\xspace}%
@@ -55,7 +94,7 @@
 \usepackage{lastpage}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
-\chead{\project\ --- DN-JD}
+\chead{\project\ --- \dnvariant}
 \lhead{}
 \rhead{}
 \rfoot{}
@@ -324,7 +363,7 @@
     \vspace{15mm}
     \textbf{Doctoral Networks (DN)}\\
     \textbf{Call: HORIZON-MSCA-2026-DN-01-01}\\
-    \textbf{HORIZON-RAISE-2026-01-MSCA}\\
+    \ifraiseopted\textbf{HORIZON-RAISE-2026-01-MSCA}\\\fi
     \vspace{15mm}
     PART B\\
     \vspace{15mm}
@@ -333,7 +372,7 @@
     \normalsize
     \textbf{This proposal is to be evaluated as:}\\
     \vspace{5mm}
-    \textbf{DN-JD}
+    \textbf{\dnvariant}
     \end{center}
     \newpage
 }

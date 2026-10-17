@@ -14,6 +14,14 @@
 % The total number of researchers
 \newcommand{\researchercount}{eight\xspace}
 
+% msca-dn.sty defaults to a standard DN, not opted in to RAISE; override
+% here for this specific proposal if that's not the case. Setting these
+% also pulls in letters.tex/raise.tex automatically in master.tex and
+% PartB2.tex (via \mscinputifdnjd/\mscinputifraise) -- no need to touch
+% the \input lines there.
+% \renewcommand{\dnvariant}{DN-JD} % or DN-ID
+% \raiseoptedtrue
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "master"
