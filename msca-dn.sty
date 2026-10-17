@@ -233,45 +233,63 @@
 \newcommand{\colorrow}{\rowcolor{msccolor}}
 \newcommand{\colorcell}{\cellcolor{msccolor}}
 
-% Work package tables need to look the same.  Backed by msctablelong
-% (longtable) rather than msctable (plain tabular) so a WP block that
-% runs long -- several \mscwptask rows plus Description of Deliverables
-% -- can break across a page boundary instead of needing to fit on one
-% page.  \endhead repeats the WP number/title/lead row at the top of
-% each continuation page.
+% Work package tables need to look the same, and match the official
+% call template's layout exactly: Table 3.1a (Tpl_Application Form
+% (Part B) (HE MSCA DN).rtf) is a single header row with WP Number, WP
+% title and Start-End month side by side, followed by a "Lead
+% participant" row below it -- not three stacked label/value rows.
+% Backed by msctablelong (longtable) rather than msctable (plain
+% tabular) so a WP block that runs long -- several \mscwptask rows plus
+% Description of Deliverables -- can break across a page boundary
+% instead of needing to fit on one page.  \endhead repeats a short
+% "Continued" row at the top of each continuation page.
 %
-% 4th argument is a \label key (e.g. wp:management) so the WP can be
+% 3rd argument is a \label key (e.g. wp:management) so the WP can be
 % cross-referenced elsewhere via \autoref{wp:management} -- clickable,
-% and showing "WP1" (etc.) since \refstepcounter{wp} runs first.
+% and showing "WP1" (etc.) since \refstepcounter{wp} runs first. The
+% Lead participant row is not a \mscwp argument -- call
+% \mscwpparsplit{Lead participant}{...} as the first line of the WP's
+% body, the same way Participants/DCs involved are called, since it's
+% just another label|value row below the header, not special to the
+% environment.
 \newcounter{wp}
 \newcounter{task}[wp]
 % Swallow the tie hyperref's \autoref always appends after expanding
 % "\wpautorefname", giving "WP1" instead of "WP 1" with no need to patch
 % hyperref itself.
 \newcommand*{\wpautorefname}[1]{WP}
-\newenvironment{mscwp}[4]{%
+\newenvironment{mscwp}[3]{%
     \refstepcounter{wp}
-    \label{#4}%
-    \begin{msctablelong}{|>{\ra}p{30mm}|>{\ra}p{140mm}|}
+    \label{#3}%
+    \begin{msctablelong}{|>{\ra}p{30mm}|>{\ra}p{107mm}|>{\ra}p{30mm}|}
         \hline
-        \colorcell\textbf{WP Number} &
-        \parbox{140mm}{WP\arabic{wp}\hfill\textbf{#1}} \\
-        \hline
-        \colorcell\textbf{WP Title} & #2 \\
-        \hline
-        \colorcell\textbf{Lead Beneficiary} & #3 \\
+        % Per the RTF, only column 1 is shaded here (and in the
+        % Lead participant/Participants/DCs involved rows in the body)
+        % -- \colorcell, not \colorrow. Objectives and Description of
+        % Work have no shading at all.
+        \colorcell\textbf{WP\arabic{wp}} & #2 & #1 \\
         \hline
         \endfirsthead
         \hline
-        \colorrow
-        \multicolumn{2}{|p{175mm}|}{\textit{Continued --- WP\arabic{wp}: #2}} \\
+        % \rowcolor is unreliable in longtable (colortbl's row-shading
+        % doesn't understand longtable's internals, and ends up shading
+        % the wrong row); \cellcolor placed inside the cell works
+        % correctly, so that's used here instead of \colorrow.
+        \multicolumn{3}{|p{167mm}|}{\colorcell\textit{Continued --- WP\arabic{wp}: #2}} \\
         \hline
         \endhead
 }{
         \hline
     \end{msctablelong}
 }
-\newcommand{\mscwppar}[2]{\multicolumn{2}{|p{175mm}|}{%
+% A label cell (column 1) plus its value spanning the remaining two
+% columns -- used for the "Lead participant"/"Participants"/"DCs
+% involved" rows, which sit below the WP Number/title/dates header row
+% rather than being their own column. Per the RTF, only the label cell
+% (column 1) is shaded -- the value cell has no background colour.
+\newcommand{\mscwpparsplit}[2]{\colorcell\textbf{#1} & \multicolumn{2}{|p{137mm}|}{#2}\\
+    \hline}
+\newcommand{\mscwppar}[2]{\multicolumn{3}{|p{167mm}|}{%
     \textbf{#1:} #2}}
 \newcommand{\mscwptask}[2]{%
     \mscwppar{\textit{\refstepcounter{task}Task \arabic{wp}.\arabic{task}. #1}}{#2}}
@@ -301,16 +319,18 @@
 % page" the call template asks for.  #1 is the header text, e.g.
 % "Beneficiary Legal Name: Name of organisation"; it repeats on every
 % continuation page via \endhead.
+% \rowcolor is unreliable in longtable (colortbl's row-shading doesn't
+% understand longtable's internals, and ends up shading the wrong row);
+% \cellcolor placed inside the cell works correctly, so that's used
+% below instead of \colorrow.
 \newenvironment{mscorg}[1]{%
     \begin{msctablelong}{|>{\ra}p{45mm}|>{\ra}p{125mm}|}
-        \colorrow
         \hline
-        \multicolumn{2}{|l|}{\textbf{#1}} \\
+        \multicolumn{2}{|l|}{\colorcell\textbf{#1}} \\
         \hline
         \endfirsthead
-        \colorrow
         \hline
-        \multicolumn{2}{|l|}{\textit{Continued --- #1}} \\
+        \multicolumn{2}{|l|}{\colorcell\textit{Continued --- #1}} \\
         \hline
         \endhead
 }{
