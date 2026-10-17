@@ -4,7 +4,7 @@
 %% Phil Garner, October 2019
 %%
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{msca-dn}[MSC DN Proposal]
+\ProvidesPackage{msca-dn}[MSC DN\-JD Proposal]
 
 % Default values when options are not specified
 \usepackage{xspace}
@@ -27,8 +27,8 @@
 \ProcessOptions\relax
 
 % Minimum font size should be 11pt in the document header.  This yields
-%  \normalsize   10.95 pt
-%  \footnotesize 9 pt, suitable for tables
+%  \normalsize   10.95 pt, the minimum size for both body text and tables as of 2026
+%  \footnotesize 9 pt
 %  \scriptsize   8 pt, suitable for footnote references
 \usepackage[a4paper,margin=15mm]{geometry}
 \usepackage[bf,small]{titlesec}
@@ -43,7 +43,7 @@
 \usepackage{lastpage}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
-\chead{\project\ --- DN}
+\chead{\project\ --- DN-JD}
 \lhead{}
 \rhead{}
 \rfoot{}
@@ -62,7 +62,7 @@
 % For tables; these are not floats, they are more just tabular environments.  With [11pt] in the documentstyle, \scriptsize is 8pt
 \usepackage{array}
 \usepackage[table]{xcolor}
-\newenvironment{msctable}[2][\footnotesize]{% \footnotesize is 9pt, the minimum size as of 2021
+\newenvironment{msctable}[2][\normalsize]{% \normalsize is 10.95pt, the minimum table size as of 2026
   \begin{center}
     #1 % Set the right size (and font maybe)
     \newcommand{\ra}{\raggedright\arraybackslash}
@@ -71,6 +71,11 @@
     \end{tabular}
   \end{center}
 }
+
+% Tags used by EU MSCA action system
+\newcommand{\size}[2]{{\fontsize{#1}{0}\selectfont#2}}
+\newcommand{\DNtag}[1]{\textcolor{gray}{\size{9}{\#@#1@\#}}}
+\newcommand{\DNtage}[1]{\textcolor{gray}{\size{9}{\#§#1§\#}}}
 
 % Using a section command here prevents the widow / orphan thing with homemade command
 \newcommand{\msccaption}[1]{\subsubsection*{#1}}
@@ -141,7 +146,8 @@
     MARIE SKŁODOWSKA-CURIE ACTIONS\\
     \vspace{15mm}
     \textbf{Doctoral Networks (DN)}\\
-    \textbf{Call: HORIZON-MSCA-2022-DN-01-01}\\
+    \textbf{Call: HORIZON-MSCA-2026-DN-01-01}\\
+    \textbf{HORIZON-RAISE-2026-01-MSCA}\\
     \vspace{15mm}
     PART B\\
     \vspace{15mm}
@@ -150,7 +156,7 @@
     \normalsize
     \textbf{This proposal is to be evaluated as:}\\
     \vspace{5mm}
-    \textbf{DN}
+    \textbf{DN-JD}
     \end{center}
     \newpage
 }

@@ -2,6 +2,8 @@
 
 Doctoral Network proposal template
 
+Tracks HE MSCA DN Application Form Part B v6.0, 26 March 2026 (call HORIZON-MSCA-2026-DN-01-01 / HORIZON-RAISE-2026-01-MSCA).
+
 There are three documents here:
 * PartB1.tex: Part B1
 * PartB2.tex: Part B2
