@@ -106,8 +106,54 @@
 \newcommand{\DNtag}[1]{\textcolor{gray}{\size{9}{\#@#1@\#}}}
 \newcommand{\DNtage}[1]{\textcolor{gray}{\size{9}{\#§#1§\#}}}
 
-% Using a section command here prevents the widow / orphan thing with homemade command
-\newcommand{\msccaption}[1]{\subsubsection*{#1}}
+% Using a section command here prevents the widow / orphan thing with
+% homemade command.
+%
+% Many tables/blocks here have a fixed identifier mandated by the call
+% template (e.g. "Table 3.1a") that's referenced by name elsewhere in
+% the document. \msccaption takes 3 args so those can be labelled and
+% cross-referenced via \autoref, the same way \mscwp/mscobj/mscdc below
+% are:
+%   #1 = full caption text as printed, e.g. "Table 3.1a: Description of Work Packages"
+%   #2 = short identifier to show via \autoref (e.g. "Table 3.1a"); leave empty ({}) to skip labelling
+%   #3 = label key (e.g. tab:wp-description); ignored when #2 is empty
+% Unlike \mscwp/mscobj/mscdc's counters, #2 is not auto-numbered -- it's
+% a fixed string (the call template already dictates the exact
+% numbering), so \themsctab is simply redefined to that string each
+% time, and \msctabautorefname swallows hyperref's tie and prints
+% nothing, since \themsctab already contains the full "Table 3.1a"-style
+% text.
+\makeatletter
+\newcounter{msctab}
+\newcommand*{\msctabautorefname}[1]{}
+\newcommand{\msccaption}[3]{%
+    \subsubsection*{#1}%
+    \def\msccaption@id{#2}%
+    \ifx\msccaption@id\@empty\else
+        \renewcommand{\themsctab}{#2}%
+        \refstepcounter{msctab}%
+        \label{#3}%
+    \fi
+}
+\makeatother
+
+% Same fixed-identifier labelling trick as \msccaption, but for a single
+% row identifier/code inside a list-style table -- a deliverable (e.g.
+% "SD2.1") or a milestone (e.g. "MS10") -- so other prose can
+% cross-reference the exact row that defines it instead of repeating a
+% bare code that may drift out of sync with the table. Usage:
+% \mscdeliv{SD2.1}{deliv:sd2-1} in place of the literal "SD2.1 &" cell
+% text -- it still prints the code, just also labels it.
+\makeatletter
+\newcounter{mscdeliv}
+\newcommand*{\mscdelivautorefname}[1]{}
+\newcommand{\mscdeliv}[2]{%
+    \renewcommand{\themscdeliv}{#1}%
+    \refstepcounter{mscdeliv}%
+    \label{#2}%
+    #1%
+}
+\makeatother
 
 % Low level sectioning.  Could be \paragraph if space is short
 \newcommand{\mscsection}[1]{\subsubsection*{#1}}
@@ -123,10 +169,19 @@
 % -- can break across a page boundary instead of needing to fit on one
 % page.  \endhead repeats the WP number/title/lead row at the top of
 % each continuation page.
+%
+% 4th argument is a \label key (e.g. wp:management) so the WP can be
+% cross-referenced elsewhere via \autoref{wp:management} -- clickable,
+% and showing "WP1" (etc.) since \refstepcounter{wp} runs first.
 \newcounter{wp}
 \newcounter{task}[wp]
-\newenvironment{mscwp}[3]{%
+% Swallow the tie hyperref's \autoref always appends after expanding
+% "\wpautorefname", giving "WP1" instead of "WP 1" with no need to patch
+% hyperref itself.
+\newcommand*{\wpautorefname}[1]{WP}
+\newenvironment{mscwp}[4]{%
     \refstepcounter{wp}
+    \label{#4}%
     \begin{msctablelong}{|>{\ra}p{30mm}|>{\ra}p{140mm}|}
         \hline
         \colorcell\textbf{WP Number} &
@@ -192,6 +247,34 @@
         \hline
     \end{msctablelong}
 }
+
+% Doctoral Network Objectives (O1-O4) need the same cross-referencing
+% mechanism as the WPs: an auto-numbered "O<n>: <title>" paragraph
+% heading with a label, so they can be cited elsewhere via
+% \autoref{obj:...} -- clickable, and showing "O1" (etc.) since
+% \refstepcounter{obj} runs first.
+\newcounter{obj}
+% Same trick as \wpautorefname: swallow the tie hyperref always appends.
+\newcommand*{\objautorefname}[1]{O}
+\newenvironment{mscobj}[2]{%
+    \refstepcounter{obj}
+    \label{#2}%
+    \paragraph{O\arabic{obj}: #1}%
+}{}
+
+% Doctoral Candidate (DC) profile paragraphs need the same mechanism: an
+% auto-numbered "DC<n>: <title> (<meta>)" paragraph heading with a
+% label, so they can be cited elsewhere via \autoref{dc:...} --
+% clickable, and showing "DC1" (etc.) since \refstepcounter{dc} runs
+% first.
+\newcounter{dc}
+% Same trick as \wpautorefname/\objautorefname: swallow hyperref's tie.
+\newcommand*{\dcautorefname}[1]{DC}
+\newenvironment{mscdc}[3]{%
+    \refstepcounter{dc}
+    \label{#3}%
+    \paragraph{DC\arabic{dc}: #1 (#2)}%
+}{}
 
 % Citations are in footnotes
 %\usepackage[style=footnote-dw]{biblatex}
