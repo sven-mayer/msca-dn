@@ -1,3 +1,5 @@
+tmp/
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -293,3 +295,6 @@ TSWLatexianTemp*
 
 # From VSCode
 *.code-workspace
+
+# macOS
+.DS_Store
