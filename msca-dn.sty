@@ -252,6 +252,10 @@
 % body, the same way Participants/DCs involved are called, since it's
 % just another label|value row below the header, not special to the
 % environment.
+%
+% The closing \hline below the body is automatic -- the body's last row
+% should end in \\ only. Adding your own trailing \hline there draws a
+% doubled bottom border.
 \newcounter{wp}
 \newcounter{task}[wp]
 % Swallow the tie hyperref's \autoref always appends after expanding
@@ -319,6 +323,10 @@
 % page" the call template asks for.  #1 is the header text, e.g.
 % "Beneficiary Legal Name: Name of organisation"; it repeats on every
 % continuation page via \endhead.
+%
+% The closing \hline below the body is automatic -- the body's last row
+% should end in \\ only. Adding your own trailing \hline there draws a
+% doubled bottom border.
 % \rowcolor is unreliable in longtable (colortbl's row-shading doesn't
 % understand longtable's internals, and ends up shading the wrong row);
 % \cellcolor placed inside the cell works correctly, so that's used
