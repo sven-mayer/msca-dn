@@ -61,15 +61,44 @@
 
 % For tables; these are not floats, they are more just tabular environments.  With [11pt] in the documentstyle, \scriptsize is 8pt
 \usepackage{array}
+\usepackage{longtable}
 \usepackage[table]{xcolor}
+\providecommand{\ra}{\raggedright\arraybackslash} % for use in table column specs, e.g. >{\ra}p{30mm}
 \newenvironment{msctable}[2][\normalsize]{% \normalsize is 10.95pt, the minimum table size as of 2026
   \begin{center}
     #1 % Set the right size (and font maybe)
-    \newcommand{\ra}{\raggedright\arraybackslash}
     \begin{tabular}{#2}
 }{%
     \end{tabular}
   \end{center}
+}
+
+% Same as msctable, but backed by longtable so the table is allowed to
+% break across a page boundary, repeating the header row(s) on each new
+% page.  Use this instead of msctable for anything that may run longer
+% than one page once filled in -- e.g. a work package description or a
+% participating-organisation profile.  Put \endfirsthead/\endhead right
+% after the header row(s) that should repeat on every continuation page.
+%
+% \newenvironment itself adds no grouping (unlike msctable above, which
+% gets one for free from \begin{center}...\end{center}), so #1 is
+% explicitly scoped with \begingroup/\endgroup here.  Without that, any
+% size override passed as #1 would leak into every file after this one:
+% \include and \input both lack a group of their own, so a bare
+% \footnotesize (or any other declaration) set here would silently apply
+% to the rest of the document from this point on.
+% The 2026 call template requires a minimum of 11pt in tables (not just
+% body text), so #1 must be left empty here -- that way the table just
+% inherits the ambient \normalsize. Do not pass \footnotesize (or
+% anything smaller) as #1; the \begingroup/\endgroup below is a safety
+% net against that mistake leaking out, not a license to make it.
+\newenvironment{msctablelong}[2][]{%
+    \begingroup
+    #1 % Leave empty -- see above; tables must stay at \normalsize (11pt minimum)
+    \begin{longtable}{#2}
+}{%
+    \end{longtable}
+    \endgroup
 }
 
 % Tags used by EU MSCA action system
@@ -88,12 +117,17 @@
 \newcommand{\colorrow}{\rowcolor{msccolor}}
 \newcommand{\colorcell}{\cellcolor{msccolor}}
 
-% Work package tables need to look the same
+% Work package tables need to look the same.  Backed by msctablelong
+% (longtable) rather than msctable (plain tabular) so a WP block that
+% runs long -- several \mscwptask rows plus Description of Deliverables
+% -- can break across a page boundary instead of needing to fit on one
+% page.  \endhead repeats the WP number/title/lead row at the top of
+% each continuation page.
 \newcounter{wp}
 \newcounter{task}[wp]
 \newenvironment{mscwp}[3]{%
     \refstepcounter{wp}
-    \begin{msctable}{|>{\ra}p{30mm}|>{\ra}p{140mm}|}
+    \begin{msctablelong}{|>{\ra}p{30mm}|>{\ra}p{140mm}|}
         \hline
         \colorcell\textbf{WP Number} &
         \parbox{140mm}{WP\arabic{wp}\hfill\textbf{#1}} \\
@@ -102,9 +136,15 @@
         \hline
         \colorcell\textbf{Lead Beneficiary} & #3 \\
         \hline
+        \endfirsthead
+        \hline
+        \colorrow
+        \multicolumn{2}{|p{175mm}|}{\textit{Continued --- WP\arabic{wp}: #2}} \\
+        \hline
+        \endhead
 }{
         \hline
-    \end{msctable}
+    \end{msctablelong}
 }
 \newcommand{\mscwppar}[2]{\multicolumn{2}{|p{175mm}|}{%
     \textbf{#1:} #2}}
@@ -129,6 +169,29 @@
 }
 \newcommand{\mscrppar}[2]{\multicolumn{6}{|p{175mm}|}{%
     \textbf{#1:} #2}}
+
+% Per-organisation profile tables (Participating Organisations section).
+% Backed by msctablelong (longtable) like mscwp, since a filled-in
+% beneficiary/associated-partner profile commonly runs past the "one
+% page" the call template asks for.  #1 is the header text, e.g.
+% "Beneficiary Legal Name: Name of organisation"; it repeats on every
+% continuation page via \endhead.
+\newenvironment{mscorg}[1]{%
+    \begin{msctablelong}{|>{\ra}p{45mm}|>{\ra}p{125mm}|}
+        \colorrow
+        \hline
+        \multicolumn{2}{|l|}{\textbf{#1}} \\
+        \hline
+        \endfirsthead
+        \colorrow
+        \hline
+        \multicolumn{2}{|l|}{\textit{Continued --- #1}} \\
+        \hline
+        \endhead
+}{
+        \hline
+    \end{msctablelong}
+}
 
 % Citations are in footnotes
 %\usepackage[style=footnote-dw]{biblatex}
