@@ -341,14 +341,20 @@
 % For the commitment letters
 \usepackage{pdfpages}
 
+% ACM's own "screen" blue (used for urlcolor/filecolor in the official
+% acmart class when its screen option is on), applied here to every
+% link kind rather than just URLs.
+\definecolor{LinkDarkBlue}{cmyk}{1,0.58,0,0.21}
+
 % Should come last
 \usepackage{hyperref}
 \hypersetup{
    colorlinks,
-   menucolor=black,
-   linkcolor=black,
-   citecolor=black,
-   urlcolor=blue
+   menucolor=LinkDarkBlue,
+   linkcolor=LinkDarkBlue,
+   citecolor=LinkDarkBlue,
+   urlcolor=LinkDarkBlue,
+   filecolor=LinkDarkBlue
 }
 
 %%% Local Variables:
