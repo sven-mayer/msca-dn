@@ -14,6 +14,17 @@
 % The total number of researchers
 \newcommand{\researchercount}{eight\xspace}
 
+% Bold each PI's own name wherever it appears as an author in a
+% \fullcite (the Participating Organisations "Relevant Publications"
+% fields), matching the original hand-typed citations' convention.
+% Listed per organisation; several PIs have more than one entry here
+% because their given name is spelled/abbreviated differently across
+% their own publications' .bib entries (e.g. "Matthew Peter" vs
+% "Matthew P." Aylett) -- each variant needs its own registration.
+\addboldbibnames{%
+    {Doe, John},%
+}
+
 % msca-dn.sty defaults to a standard DN, not opted in to RAISE; override
 % here for this specific proposal if that's not the case. Setting these
 % also pulls in letters.tex/raise-dn.tex automatically in master.tex and
