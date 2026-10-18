@@ -131,7 +131,12 @@
 
 % For tables; these are not floats, they are more just tabular environments.  With [11pt] in the documentstyle, \scriptsize is 8pt
 \usepackage{array}
+\usepackage{tabularx}
 \usepackage{longtable}
+% xltabular combines tabularx's auto-sized X columns with longtable's
+% ability to break across a page boundary -- needed for tables that use
+% X columns but can run past one page (e.g. the Milestones List table).
+\usepackage{xltabular}
 \usepackage[table]{xcolor}
 \providecommand{\ra}{\raggedright\arraybackslash} % for use in table column specs, e.g. >{\ra}p{30mm}
 \newenvironment{msctable}[2][\normalsize]{% \normalsize is 10.95pt, the minimum table size as of 2026
@@ -376,9 +381,113 @@
 
 % Citations are in footnotes
 %\usepackage[style=footnote-dw]{biblatex}
+\usepackage{etoolbox} % biblatex already depends on this transitively; load explicitly since we use \newbool/\ifbool directly below
 \usepackage[style=verbose]{biblatex}
 \let\cite\footcite
+\DeclareNameFormat{familyonly}{\namepartfamily\usebibmacro{name:andothers}}
+\newbibmacro*{footcite:publication}{%
+    \iffieldundef{journaltitle}{%
+        \setunit{\addspace}%
+        \printfield{volume}%
+        \iffieldundef{number}{}{\adddot\printfield{number}}%
+    }{}%
+    \setunit{\addcomma\space}%
+    \printlist{publisher}%
+    \setunit{\addcomma\space}%
+    \printfield{year}%
+    \setunit{\addcomma\space}%
+    \iffieldundef{doi}{\printfield{url}}{\printfield{doi}}%
+}
+\DeclareCiteCommand{\footcite}[\mkbibfootnote]
+    {\usebibmacro{prenote}}
+        {\usebibmacro{citeindex}\printnames[familyonly][1-1]{labelname}\setunit{\addcomma\space}\usebibmacro{footcite:publication}}
+    {\multicitedelim}
+    {\usebibmacro{postnote}}
 \bibfont{\scriptsize}
+
+% Keep footnote citations compact: drop fields that aren't needed for a
+% short footnote reference, even if present in the .bib entry.
+% Note: this document never calls \printbibliography (every citation is
+% an inline \footcite), so \AtEveryBibitem (which only fires for printed
+% bibliography lists) would never actually run. \AtEveryCite also isn't
+% the right hook here: it fires once per citation *command*, before the
+% per-entry context is bound, so \clearfield/\clearname inside it don't
+% reliably apply to the entry's fields. \AtEveryCitekey fires once per
+% entry actually being cited, which is what's needed -- this is also how
+% e.g. the biblatex-true-citepages-omit package clears pages per entry.
+% \fullcite (used for the full-text publication citations in the
+% Participating Organisations bios) is exempt from the compact-footnote
+% field-clearing below -- "full" should mean the complete entry (pages,
+% series, etc. included), not the same trimmed-down footnote form used
+% everywhere else. Wrap the real \fullcite to flag that it's active.
+% Keep citations compact by clearing fields that aren't needed in the
+% proposal, even if present in the .bib entry. This applies to every
+% citation command, including \fullcite in the Participating Organisations
+% publication lists, so those entries also omit fields such as pages and
+% series. The document uses inline citations rather than \printbibliography,
+% so \AtEveryBibitem would not run. \AtEveryCitekey fires once per entry
+% actually being cited, allowing its fields to be cleared reliably; this is
+% also how e.g. biblatex-true-citepages-omit clears pages per entry.
+\newbool{mscfullcite}
+% \let\mscorig@fullcite\fullcite
+% \renewcommand{\fullcite}[1]{%
+%     \booltrue{mscfullcite}%
+%     \mscorig@fullcite{#1}%
+%     \boolfalse{mscfullcite}%
+% }
+\AtEveryCitekey{%
+  % \ifbool{mscfullcite}{}{%
+    \clearlist{language}%
+    \clearfield{pages}%
+    \clearfield{series}%
+    \clearname{editor}%
+    \clearlist{location}% location (and the legacy BibTeX "address" alias for it) is a list-type field, not a plain field
+    \clearfield{isbn}%
+    \clearfield{issn}%
+    \clearfield{eprint}%
+    \iffieldundef{doi}{}{\clearfield{url}\clearfield{urlyear}\clearfield{urlmonth}\clearfield{urlday}}%
+  % }%
+}
+
+% \addboldbibnames{{Family, Given},{Family, Given},...} registers names
+% that print \mkbibbold wherever biblatex renders them as an author
+% (used to bold each PI's own name within the \fullcite publication
+% entries in the Participating Organisations bios, matching how the
+% original hand-typed citations always bolded the local PI). Matching
+% strips all spaces from both sides first, so the exact spacing used
+% in the call here doesn't need to match the .bib file byte-for-byte;
+% it still needs the same given-name spelling/abbreviation as whatever
+% .bib entry it should match (register multiple variants for the same
+% person if their given name is spelled differently across entries).
+\usepackage{xstring}
+\makeatletter
+\newtoggle{mscboldnamematch}
+\newcommand*{\mscboldnamechecks}{}
+\newcommand*{\addboldbibnames}[1]{\forcsvlist{\msc@addboldbibname}{#1}}
+\newcommand*{\msc@addboldbibname}[1]{%
+    \msc@splitboldbibname#1,\msc@stop
+}
+\def\msc@splitboldbibname#1,#2\msc@stop{%
+    \StrDel{#1}{ }[\msc@family]%
+    \StrDel{#2}{ }[\msc@given]%
+    \protected@edef\msc@onecheck{%
+        \noexpand\StrDel{\noexpand\namepartfamily}{ }[\noexpand\msc@curfamily]%
+        \noexpand\StrDel{\noexpand\namepartgiven}{ }[\noexpand\msc@curgiven]%
+        \noexpand\ifdefstring{\noexpand\msc@curfamily}{\msc@family}{%
+            \noexpand\ifdefstring{\noexpand\msc@curgiven}{\msc@given}%
+                {\noexpand\toggletrue{mscboldnamematch}}{}%
+        }{}%
+    }%
+    \g@addto@macro{\mscboldnamechecks}{\msc@onecheck}%
+}
+\newcommand*{\msc@ifboldname}[2]{%
+    \togglefalse{mscboldnamematch}%
+    \mscboldnamechecks
+    \iftoggle{mscboldnamematch}{#1}{#2}%
+}
+\renewcommand*{\mkbibnamefamily}[1]{\msc@ifboldname{\mkbibbold{#1}}{#1}}
+\renewcommand*{\mkbibnamegiven}[1]{\msc@ifboldname{\mkbibbold{#1}}{#1}}
+\makeatother
 
 % Start and end pages
 \setlength{\fboxsep}{0pt}
@@ -423,6 +532,10 @@
    urlcolor=LinkDarkBlue,
    filecolor=LinkDarkBlue
 }
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+\renewcommand{\paragraphautorefname}{Section}
 
 %%% Local Variables:
 %%% mode: latex
